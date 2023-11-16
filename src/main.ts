@@ -11,6 +11,7 @@ import { IRoute } from './routes.types'
 import { appendEndpointToSwaggerDoc, writeSwaggerDocument } from './swagger';
 import * as swaggerUi from 'swagger-ui-express'
 import { errorHandler } from './middlewares/error-handler.middleware';
+import { zoneJSMiddleware } from './middlewares/zonejs.middleware';
 
 const app: Express = express();
 const port = process.env.PORT;
@@ -22,17 +23,40 @@ export const routes: IRoute[] = [
 ]
 
 routes.forEach((route) => {
-  const middlewares: Handler[] = []
-
-  route.middlewares?.forEach(middleware => {
-    middlewares.push(async (req, res, next) => {
+  const allMiddlewares: Handler[] = route.middlewares?.map((middleware) => {
+    return async (req, res, next) => {
       try {
         await middleware(req, res, next)
-      } catch(err) {
+      } catch (err) {
         next(err)
       }
-    })
-  })
+    }
+  }) || [];
+
+  // ZoneJS
+  allMiddlewares.push(zoneJSMiddleware)
+
+  // Schema Validation
+  allMiddlewares.push(
+    async (req, res, next) => {
+      try {
+        await validateAJVSchema(req, res, next)
+      } catch (err) {
+        next(err)
+      }
+    }
+  )
+
+  // Main controller method
+  allMiddlewares.push(
+    async (req, res, next) => {
+      try {
+        await route.controller(req, res, next)
+      } catch (err) {
+        next(err)
+      }
+    }
+  )
 
   app[route.method](route.endpoint,
     // attach route config
@@ -41,23 +65,7 @@ routes.forEach((route) => {
       await next()
     },
 
-    ...middlewares,
-
-    async (req, res, next) => {
-      try {
-        await validateAJVSchema(req, res, next)
-      } catch(err) {
-        next(err)
-      }
-    },
-
-    async (req, res, next) => {
-      try {
-        await route.controller(req, res, next)
-      } catch(err) {
-        next(err)
-      }
-    }
+    ...allMiddlewares
   )
 
   appendEndpointToSwaggerDoc(route)
