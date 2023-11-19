@@ -1,7 +1,7 @@
-import { apiKeyMiddleware } from "../../middlewares/api-key.middleware";
-import { IRoute, SUPPORTED_SECURITIES } from "../../routes.types";
-import * as UserController from './users.controller';
-import { createUserResult, createUserSchema } from "./users.schemas";
+import { apiKeyMiddleware } from 'src/middlewares/api-key.middleware';
+import * as UserController from 'src/modules/users/users.controller';
+import { createUserResult, createUserSchema } from 'src/modules/users/users.schemas';
+import { IRoute, SUPPORTED_SECURITIES } from 'src/routes.types';
 
 export const userRoutes: IRoute[] = [
   {
@@ -12,10 +12,10 @@ export const userRoutes: IRoute[] = [
     middlewares: [apiKeyMiddleware],
     swagger: {
       responses: {
-        201: createUserResult
+        201: createUserResult,
       },
-      security: [SUPPORTED_SECURITIES["Api-Key"]],
-      summary: 'hello world'
-    }
-  }
-]
+      security: [SUPPORTED_SECURITIES['Api-Key']],
+      summary: 'Create new user',
+    },
+  },
+];

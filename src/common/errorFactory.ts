@@ -1,14 +1,14 @@
 export interface IErrorDetails {
-  errorCode?: string
+  errorCode?: string;
 }
 
 export class AppError extends Error {
   public readonly statusCode: number;
-  public readonly errorDetails?: IErrorDetails;  
+  public readonly errorDetails?: IErrorDetails;
 
   constructor(statusCode: number, message: string, errorDetails?: IErrorDetails) {
     super(message);
     this.statusCode = statusCode;
-    this.errorDetails = errorDetails
+    this.errorDetails = errorDetails;
   }
 }

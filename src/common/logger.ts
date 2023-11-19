@@ -1,19 +1,24 @@
-import 'zone.js'
+import 'zone.js';
 
-const getRequestId = () => Zone.current.get('id');
+const getRequestId = (): string => Zone.current.get('id');
 
-export function log(message: string) {
-  console.log(`Log: for request ${getRequestId()} - ${message}`)
+function internalLog(type: 'log' | 'warn' | 'error' | 'info', message: string | Error): void {
+  if (process.env.NODE_ENV !== 'test')
+    console[type](`${type.toUpperCase()}: for request ${getRequestId()} - ${message}`);
 }
 
-export function warn(message: string) {
-  console.warn(`Warn: for request ${getRequestId()} - ${message}`)
+export function log(message: string): void {
+  internalLog('log', message);
 }
 
-export function error(message: string) {
-  console.error(`Error: for request ${getRequestId()} - ${message}`)
+export function warn(message: string): void {
+  internalLog('warn', message);
 }
 
-export function info(message: string) {
-  console.info(`Info: for request ${getRequestId()} - ${message}`)
+export function error(message: string | Error): void {
+  internalLog('error', message);
+}
+
+export function info(message: string): void {
+  internalLog('info', message);
 }
